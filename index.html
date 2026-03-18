@@ -2,26 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:;base64,=" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>ArcGIS Maps SDK for JavaScript Tutorials: Create a web app using components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ArcGIS App</title>
   </head>
 
   <body>
-
     <calcite-shell>
       <calcite-navigation slot="header">
         <calcite-navigation-logo slot="logo"></calcite-navigation-logo>
       </calcite-navigation>
 
-      <arcgis-map item-id="e691172598f04ea8881cd2a4adaa45ba" zoom="4">
+      <!-- Search -->
+      <arcgis-search slot="top-right"></arcgis-search>
+
+      <!-- Map -->
+      <arcgis-map id="map" item-id="21319ca3e49c47e982cd0b58060f4238">
         <arcgis-zoom slot="top-left"></arcgis-zoom>
-        <arcgis-layer-list slot="top-right"></arcgis-layer-list>
       </arcgis-map>
+
+      <!-- Button -->
+      <calcite-button id="bufferBtn" slot="panel-start">
+        Create Buffer
+      </calcite-button>
 
     </calcite-shell>
 
     <script type="module" src="/main.js"></script>
   </body>
-
 </html>

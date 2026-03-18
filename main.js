@@ -1,41 +1,87 @@
-import "./style.css";
+import "@arcgis/map-components/dist/components/arcgis-map";
+import "@arcgis/map-components/dist/components/arcgis-zoom";
+import "@arcgis/map-components/dist/components/arcgis-search";
 
-import "@arcgis/map-components/components/arcgis-layer-list";
-import "@arcgis/map-components/components/arcgis-map";
-import "@arcgis/map-components/components/arcgis-zoom";
+import "@esri/calcite-components/dist/components/calcite-shell";
+import "@esri/calcite-components/dist/components/calcite-navigation";
+import "@esri/calcite-components/dist/components/calcite-navigation-logo";
+import "@esri/calcite-components/dist/components/calcite-button";
 
-import "@esri/calcite-components/components/calcite-navigation";
-import "@esri/calcite-components/components/calcite-navigation-logo";
-import "@esri/calcite-components/components/calcite-shell";
+import esriConfig from "@arcgis/core/config";
+import Graphic from "@arcgis/core/Graphic";
+import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
+import * as geometryEngine from "@arcgis/core/geometry/geometryEngine";
 
-// Get a reference to the arcgis-layer-list element
-const arcgisLayerList = document.querySelector("arcgis-layer-list");
+// 🔑 Optional but recommended
+esriConfig.apiKey = "3efb6aa9e8674c9683f67db6d560a996";
 
-// Set the listItemCreatedFunction to add a legend to each list item
-arcgisLayerList.listItemCreatedFunction = (event) => {
-  const { item } = event;
-  if (item.layer.type !== "group") {
-    item.panel = {
-      content: "legend",
-    };
+const mapEl = document.getElementById("map");
+
+mapEl.addEventListener("arcgisViewReadyChange", async (event) => {
+  const view = event.target.view;
+
+  // 🌍 1. Zoom to user location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const point = {
+        type: "point",
+        longitude: pos.coords.longitude,
+        latitude: pos.coords.latitude
+      };
+
+      view.goTo({
+        center: [point.longitude, point.latitude],
+        zoom: 14
+      });
+    });
   }
-};
 
-// Get a reference to the arcgis-map element
-const viewElement = document.querySelector("arcgis-map");
+  // ➕ Graphics layer for buffer
+  const graphicsLayer = new GraphicsLayer();
+  view.map.add(graphicsLayer);
 
-// Wait for the map component to be ready before accessing its properties.
-viewElement.addEventListener("arcgisViewReadyChange", () => {
+  let clickedPoint = null;
 
-  const { portalItem } = viewElement.map;
+  // 📍 Capture click point
+  view.on("click", (event) => {
+    clickedPoint = event.mapPoint;
 
-  const navigationLogo = document.querySelector("calcite-navigation-logo");
-  navigationLogo.heading = portalItem.title;
-  navigationLogo.description = portalItem.snippet;
-  navigationLogo.thumbnail = portalItem.thumbnailUrl;
+    graphicsLayer.removeAll();
 
-  const layer = viewElement.map.layers.find((layer) => layer.id === "Accidental_Deaths_8938");
+    const pointGraphic = new Graphic({
+      geometry: clickedPoint,
+      symbol: {
+        type: "simple-marker",
+        color: "red",
+        size: "10px"
+      }
+    });
 
-  layer.popupTemplate.title = "Accidental Deaths";
+    graphicsLayer.add(pointGraphic);
+  });
 
+  // 🔘 Buffer button
+  document.getElementById("bufferBtn").addEventListener("click", () => {
+    if (!clickedPoint) {
+      alert("Click on map first");
+      return;
+    }
+
+    // 🧠 Create buffer (e.g., 1 km)
+    const buffer = geometryEngine.buffer(clickedPoint, 1, "kilometers");
+
+    const bufferGraphic = new Graphic({
+      geometry: buffer,
+      symbol: {
+        type: "simple-fill",
+        color: [0, 0, 255, 0.2],
+        outline: {
+          color: "blue",
+          width: 2
+        }
+      }
+    });
+
+    graphicsLayer.add(bufferGraphic);
+  });
 });
