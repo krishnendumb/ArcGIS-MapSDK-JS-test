@@ -8,7 +8,7 @@
   <!-- ArcGIS SDK -->
   <script type="module" src="https://js.arcgis.com/5.0/"></script>
 
-  <!-- Calcite CSS -->
+  <!-- Calcite -->
   <link
     rel="stylesheet"
     href="https://js.arcgis.com/calcite-components/2.4.0/calcite.css"
@@ -43,7 +43,10 @@
     </calcite-panel>
 
     <calcite-panel heading="Basemap Gallery">
-      <arcgis-basemap-gallery reference-element="map" source="portal">
+      <!-- ✅ FIXED -->
+      <arcgis-basemap-gallery
+        id="basemapGallery"
+        reference-element="map">
       </arcgis-basemap-gallery>
     </calcite-panel>
 
@@ -60,7 +63,7 @@
 
     <arcgis-zoom slot="top-left"></arcgis-zoom>
 
-    <!-- ✅ SEARCH -->
+    <!-- SEARCH -->
     <arcgis-search
       id="searchWidget"
       slot="top-right"
@@ -73,24 +76,22 @@
 </calcite-shell>
 
 <script type="module">
-  // 🔹 Import modules
+  // 🔹 Imports
   const esriConfig = await $arcgis.import("@arcgis/core/config.js");
   const FeatureLayer = await $arcgis.import("@arcgis/core/layers/FeatureLayer.js");
+  const Basemap = await $arcgis.import("@arcgis/core/Basemap.js");
 
-  // 🔑 API KEY
+  // 🔑 API Key
   esriConfig.apiKey = "aTkT7ToOCRdMpcpndOcf6vA..h2vgn-j0W7_OlQRdjV1ab_JYDxLjmQodWZvpQ7bUHe6OEmmf8oSfFB83hSuU6SaIG4ZNv3sDaTAnNcDxH0ZmSX3ADray7mod1npTLd7t-1S57WaK119dE1MqfopoiTewt9A7v0Hi1rFdU6g.";
 
-  // 🔹 Map ready
   const mapEl = document.getElementById("map");
 
   mapEl.addEventListener("arcgisViewReadyChange", async (event) => {
     const view = event.target.view;
-
     await view.when();
 
-    // 🔔 Ask for location
+    // 🔔 Location prompt
     const consent = confirm("Do you want to move to your current location?");
-
     if (consent && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
         await view.goTo({
@@ -105,7 +106,6 @@
     const search = document.getElementById("searchWidget");
     await search.componentOnReady();
 
-    // Feature layers
     const districts = new FeatureLayer({
       url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_117th_Congressional_Districts_all/FeatureServer/0"
     });
@@ -114,10 +114,7 @@
       url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/US_Senators_2020/FeatureServer/0"
     });
 
-    // Set search sources
     search.sources = [
-
-      // District search
       {
         layer: districts,
         searchFields: ["DISTRICTID"],
@@ -126,8 +123,6 @@
         placeholder: "Search District (e.g., 3708)",
         outFields: ["*"]
       },
-
-      // Senator search
       {
         layer: senators,
         searchFields: ["Name", "Party"],
@@ -136,15 +131,27 @@
         placeholder: "Search Senator (e.g., Casey)",
         outFields: ["*"]
       },
-
-      // Geocoding (IMPORTANT)
       {
         name: "World Geocoder",
         placeholder: "Search location (e.g., Bengaluru)",
         singleLineFieldName: "SingleLine",
         url: "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer"
       }
+    ];
 
+    // 🗺️ BASEMAP GALLERY FIX (IMPORTANT PART)
+
+    const basemapGallery = document.getElementById("basemapGallery");
+    await basemapGallery.componentOnReady();
+
+    // 👉 Force load default basemaps (like sample)
+    basemapGallery.source = [
+      Basemap.fromId("streets"),
+      Basemap.fromId("satellite"),
+      Basemap.fromId("topo"),
+      Basemap.fromId("hybrid"),
+      Basemap.fromId("dark-gray"),
+      Basemap.fromId("gray")
     ];
 
   });
