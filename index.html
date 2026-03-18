@@ -1,9 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JavaScript Map SDK Demo App</title>
+
+  <!-- ArcGIS SDK -->
+  <script type="module" src="https://js.arcgis.com/5.0/"></script>
 
   <!-- Calcite CSS -->
   <link
@@ -12,14 +15,9 @@
   />
 
   <style>
-    html, body, arcgis-map {
+    html, body, calcite-shell, arcgis-map {
       margin: 0;
       padding: 0;
-      height: 100%;
-      width: 100%;
-    }
-
-    calcite-shell {
       height: 100%;
       width: 100%;
     }
@@ -28,54 +26,129 @@
 
 <body>
 
-  <calcite-shell>
+<calcite-shell>
 
-    <!-- LEFT PANEL (Layer control) -->
-    <calcite-shell-panel slot="panel-start" display-mode="float">
-      <calcite-panel heading="Layers">
-        <arcgis-layer-list reference-element="map"></arcgis-layer-list>
-      </calcite-panel>
-    </calcite-shell-panel>
+  <!-- LEFT PANEL -->
+  <calcite-shell-panel slot="panel-start" display-mode="float">
+    <calcite-panel heading="Layers">
+      <arcgis-layer-list reference-element="map"></arcgis-layer-list>
+    </calcite-panel>
+  </calcite-shell-panel>
 
-    <!-- RIGHT PANEL (Legend + Basemap) -->
-    <calcite-shell-panel slot="panel-end" display-mode="float">
+  <!-- RIGHT PANEL -->
+  <calcite-shell-panel slot="panel-end" display-mode="float">
 
-      <calcite-panel heading="Legend">
-        <arcgis-legend reference-element="map"></arcgis-legend>
-      </calcite-panel>
+    <calcite-panel heading="Legend">
+      <arcgis-legend reference-element="map"></arcgis-legend>
+    </calcite-panel>
 
-      <calcite-panel heading="Basemap Gallery">
-        <arcgis-basemap-gallery
-          reference-element="map"
-          source="portal">
-        </arcgis-basemap-gallery>
-      </calcite-panel>
+    <calcite-panel heading="Basemap Gallery">
+      <arcgis-basemap-gallery reference-element="map" source="portal">
+      </arcgis-basemap-gallery>
+    </calcite-panel>
 
-    </calcite-shell-panel>
+  </calcite-shell-panel>
 
-    <!-- HEADER -->
-    <calcite-navigation slot="header">
-      <calcite-navigation-logo
-        heading="JavaScript Map SDK Demo App">
-      </calcite-navigation-logo>
-    </calcite-navigation>
+  <!-- HEADER -->
+  <calcite-navigation slot="header">
+    <calcite-navigation-logo heading="JavaScript Map SDK Demo App">
+    </calcite-navigation-logo>
+  </calcite-navigation>
 
-    <!-- SEARCH -->
-    <arcgis-search slot="top-right"></arcgis-search>
+  <!-- MAP -->
+  <arcgis-map id="map" item-id="21319ca3e49c47e982cd0b58060f4238">
 
-    <!-- MAP -->
-    <arcgis-map
-      id="map"
-      item-id="21319ca3e49c47e982cd0b58060f4238">
+    <arcgis-zoom slot="top-left"></arcgis-zoom>
 
-      <arcgis-zoom slot="top-left"></arcgis-zoom>
+    <!-- ✅ SEARCH -->
+    <arcgis-search
+      id="searchWidget"
+      slot="top-right"
+      all-placeholder="Search location / district / senator"
+      include-default-sources-disabled>
+    </arcgis-search>
 
-    </arcgis-map>
+  </arcgis-map>
 
-  </calcite-shell>
+</calcite-shell>
 
-  <!-- Main JS -->
-  <script type="module" src="/main.js"></script>
+<script type="module">
+  // 🔹 Import modules
+  const esriConfig = await $arcgis.import("@arcgis/core/config.js");
+  const FeatureLayer = await $arcgis.import("@arcgis/core/layers/FeatureLayer.js");
+
+  // 🔑 API KEY
+  esriConfig.apiKey = "aTkT7ToOCRdMpcpndOcf6vA..h2vgn-j0W7_OlQRdjV1ab_JYDxLjmQodWZvpQ7bUHe6OEmmf8oSfFB83hSuU6SaIG4ZNv3sDaTAnNcDxH0ZmSX3ADray7mod1npTLd7t-1S57WaK119dE1MqfopoiTewt9A7v0Hi1rFdU6g.";
+
+  // 🔹 Map ready
+  const mapEl = document.getElementById("map");
+
+  mapEl.addEventListener("arcgisViewReadyChange", async (event) => {
+    const view = event.target.view;
+
+    await view.when();
+
+    // 🔔 Ask for location
+    const consent = confirm("Do you want to move to your current location?");
+
+    if (consent && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        await view.goTo({
+          center: [pos.coords.longitude, pos.coords.latitude],
+          zoom: 15
+        });
+      });
+    }
+
+    // 🔍 SEARCH CONFIG (MULTI SOURCE)
+
+    const search = document.getElementById("searchWidget");
+    await search.componentOnReady();
+
+    // Feature layers
+    const districts = new FeatureLayer({
+      url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_117th_Congressional_Districts_all/FeatureServer/0"
+    });
+
+    const senators = new FeatureLayer({
+      url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/US_Senators_2020/FeatureServer/0"
+    });
+
+    // Set search sources
+    search.sources = [
+
+      // District search
+      {
+        layer: districts,
+        searchFields: ["DISTRICTID"],
+        displayField: "DISTRICTID",
+        name: "Districts",
+        placeholder: "Search District (e.g., 3708)",
+        outFields: ["*"]
+      },
+
+      // Senator search
+      {
+        layer: senators,
+        searchFields: ["Name", "Party"],
+        displayField: "Name",
+        name: "Senators",
+        placeholder: "Search Senator (e.g., Casey)",
+        outFields: ["*"]
+      },
+
+      // Geocoding (IMPORTANT)
+      {
+        name: "World Geocoder",
+        placeholder: "Search location (e.g., Bengaluru)",
+        singleLineFieldName: "SingleLine",
+        url: "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer"
+      }
+
+    ];
+
+  });
+</script>
 
 </body>
 </html>
