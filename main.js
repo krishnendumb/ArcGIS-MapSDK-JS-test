@@ -1,87 +1,47 @@
 import "@arcgis/map-components/dist/components/arcgis-map";
 import "@arcgis/map-components/dist/components/arcgis-zoom";
 import "@arcgis/map-components/dist/components/arcgis-search";
+import "@arcgis/map-components/dist/components/arcgis-layer-list";
+import "@arcgis/map-components/dist/components/arcgis-legend";
+import "@arcgis/map-components/dist/components/arcgis-basemap-gallery";
 
 import "@esri/calcite-components/dist/components/calcite-shell";
 import "@esri/calcite-components/dist/components/calcite-navigation";
 import "@esri/calcite-components/dist/components/calcite-navigation-logo";
-import "@esri/calcite-components/dist/components/calcite-button";
+import "@esri/calcite-components/dist/components/calcite-shell-panel";
+import "@esri/calcite-components/dist/components/calcite-panel";
 
 import esriConfig from "@arcgis/core/config";
-import Graphic from "@arcgis/core/Graphic";
-import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
-import * as geometryEngine from "@arcgis/core/geometry/geometryEngine";
 
-// 🔑 Optional but recommended
-esriConfig.apiKey = "ad6lsens8DxB6aNwAh9fneA..0-EylT3O4PZlvaCwgn5nzRoxdD9eOJXqEIiykyicM4Mc7Qjv-_aomwEDybF_RyLaea2Qa3Nzxdj7Ik7O7OQ0vN4FCDlal97xETNhINbOOED72WkO3gw4SOR9ZNjL5Zy6UWLkKvzIvwmCX7c.";
+// 🔑 API Key
+esriConfig.apiKey = "aTkT7ToOCRdMpcpndOcf6vA..h2vgn-j0W7_OlQRdjV1ab_JYDxLjmQodWZvpQ7bUHe6OEmmf8oSfFB83hSuU6SaIG4ZNv3sDaTAnNcDxH0ZmSX3ADray7mod1npTLd7t-1S57WaK119dE1MqfopoiTewt9A7v0Hi1rFdU6g.";
 
 const mapEl = document.getElementById("map");
 
 mapEl.addEventListener("arcgisViewReadyChange", async (event) => {
   const view = event.target.view;
 
-  // 🌍 1. Zoom to user location
+  // ✅ Ensure map fully loaded
+  await view.when();
+
+  // 🌍 Auto zoom to user's location
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const point = {
-        type: "point",
-        longitude: pos.coords.longitude,
-        latitude: pos.coords.latitude
-      };
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const point = {
+          type: "point",
+          longitude: pos.coords.longitude,
+          latitude: pos.coords.latitude
+        };
 
-      view.goTo({
-        center: [point.longitude, point.latitude],
-        zoom: 14
-      });
-    });
+        await view.goTo({
+          target: point,
+          zoom: 15
+        });
+      },
+      (err) => {
+        console.error("Location error:", err);
+      }
+    );
   }
-
-  // ➕ Graphics layer for buffer
-  const graphicsLayer = new GraphicsLayer();
-  view.map.add(graphicsLayer);
-
-  let clickedPoint = null;
-
-  // 📍 Capture click point
-  view.on("click", (event) => {
-    clickedPoint = event.mapPoint;
-
-    graphicsLayer.removeAll();
-
-    const pointGraphic = new Graphic({
-      geometry: clickedPoint,
-      symbol: {
-        type: "simple-marker",
-        color: "red",
-        size: "10px"
-      }
-    });
-
-    graphicsLayer.add(pointGraphic);
-  });
-
-  // 🔘 Buffer button
-  document.getElementById("bufferBtn").addEventListener("click", () => {
-    if (!clickedPoint) {
-      alert("Click on map first");
-      return;
-    }
-
-    // 🧠 Create buffer (e.g., 1 km)
-    const buffer = geometryEngine.buffer(clickedPoint, 1, "kilometers");
-
-    const bufferGraphic = new Graphic({
-      geometry: buffer,
-      symbol: {
-        type: "simple-fill",
-        color: [0, 0, 255, 0.2],
-        outline: {
-          color: "blue",
-          width: 2
-        }
-      }
-    });
-
-    graphicsLayer.add(bufferGraphic);
-  });
 });

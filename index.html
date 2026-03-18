@@ -1,32 +1,54 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ArcGIS App</title>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArcGIS App</title>
 
-  <body>
-    <calcite-shell>
-      <calcite-navigation slot="header">
-        <calcite-navigation-logo slot="logo"></calcite-navigation-logo>
-      </calcite-navigation>
+  <style>
+    html, body, arcgis-map {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
 
-      <!-- Search -->
-      <arcgis-search slot="top-right"></arcgis-search>
+<body>
 
-      <!-- Map -->
-      <arcgis-map id="map" item-id="21319ca3e49c47e982cd0b58060f4238">
-        <arcgis-zoom slot="top-left"></arcgis-zoom>
-      </arcgis-map>
+  <calcite-shell>
 
-      <!-- Button -->
-      <calcite-button id="bufferBtn" slot="panel-start">
-        Create Buffer
-      </calcite-button>
+    <!-- LEFT PANEL -->
+    <calcite-shell-panel slot="panel-start" display-mode="float">
 
-    </calcite-shell>
+      <calcite-panel heading="Layers & Legend">
+        <arcgis-layer-list reference-element="map"></arcgis-layer-list>
+        <arcgis-legend reference-element="map"></arcgis-legend>
+      </calcite-panel>
 
-    <script type="module" src="/main.js"></script>
-  </body>
+      <calcite-panel heading="Basemap">
+        <arcgis-basemap-gallery reference-element="map"></arcgis-basemap-gallery>
+      </calcite-panel>
+
+    </calcite-shell-panel>
+
+    <!-- HEADER -->
+    <calcite-navigation slot="header">
+      <calcite-navigation-logo></calcite-navigation-logo>
+    </calcite-navigation>
+
+    <!-- SEARCH -->
+    <arcgis-search slot="top-right"></arcgis-search>
+
+    <!-- MAP -->
+    <arcgis-map id="map" item-id="21319ca3e49c47e982cd0b58060f4238">
+      <arcgis-zoom slot="top-left"></arcgis-zoom>
+    </arcgis-map>
+
+  </calcite-shell>
+
+  <script type="module" src="/main.js"></script>
+
+</body>
 </html>
