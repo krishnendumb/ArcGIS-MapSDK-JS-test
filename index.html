@@ -2,13 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ArcGIS App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JavaScript Map SDK Demo App</title>
+
+  <!-- Calcite CSS -->
+  <link
+    rel="stylesheet"
+    href="https://js.arcgis.com/calcite-components/2.4.0/calcite.css"
+  />
 
   <style>
     html, body, arcgis-map {
       margin: 0;
       padding: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    calcite-shell {
       height: 100%;
       width: 100%;
     }
@@ -19,35 +30,51 @@
 
   <calcite-shell>
 
-    <!-- LEFT PANEL -->
+    <!-- LEFT PANEL (Layer control) -->
     <calcite-shell-panel slot="panel-start" display-mode="float">
-
-      <calcite-panel heading="Layers & Legend">
+      <calcite-panel heading="Layers">
         <arcgis-layer-list reference-element="map"></arcgis-layer-list>
+      </calcite-panel>
+    </calcite-shell-panel>
+
+    <!-- RIGHT PANEL (Legend + Basemap) -->
+    <calcite-shell-panel slot="panel-end" display-mode="float">
+
+      <calcite-panel heading="Legend">
         <arcgis-legend reference-element="map"></arcgis-legend>
       </calcite-panel>
 
-      <calcite-panel heading="Basemap">
-        <arcgis-basemap-gallery reference-element="map"></arcgis-basemap-gallery>
+      <calcite-panel heading="Basemap Gallery">
+        <arcgis-basemap-gallery
+          reference-element="map"
+          source="portal">
+        </arcgis-basemap-gallery>
       </calcite-panel>
 
     </calcite-shell-panel>
 
     <!-- HEADER -->
     <calcite-navigation slot="header">
-      <calcite-navigation-logo></calcite-navigation-logo>
+      <calcite-navigation-logo
+        heading="JavaScript Map SDK Demo App">
+      </calcite-navigation-logo>
     </calcite-navigation>
 
     <!-- SEARCH -->
     <arcgis-search slot="top-right"></arcgis-search>
 
     <!-- MAP -->
-    <arcgis-map id="map" item-id="21319ca3e49c47e982cd0b58060f4238">
+    <arcgis-map
+      id="map"
+      item-id="21319ca3e49c47e982cd0b58060f4238">
+
       <arcgis-zoom slot="top-left"></arcgis-zoom>
+
     </arcgis-map>
 
   </calcite-shell>
 
+  <!-- Main JS -->
   <script type="module" src="/main.js"></script>
 
 </body>
