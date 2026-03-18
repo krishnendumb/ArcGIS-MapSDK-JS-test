@@ -13,7 +13,7 @@ import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import * as geometryEngine from "@arcgis/core/geometry/geometryEngine";
 
 // 🔑 Optional but recommended
-esriConfig.apiKey = "3efb6aa9e8674c9683f67db6d560a996";
+esriConfig.apiKey = "ad6lsens8DxB6aNwAh9fneA..0-EylT3O4PZlvaCwgn5nzRoxdD9eOJXqEIiykyicM4Mc7Qjv-_aomwEDybF_RyLaea2Qa3Nzxdj7Ik7O7OQ0vN4FCDlal97xETNhINbOOED72WkO3gw4SOR9ZNjL5Zy6UWLkKvzIvwmCX7c.";
 
 const mapEl = document.getElementById("map");
 
